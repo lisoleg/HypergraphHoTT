@@ -1,0 +1,40 @@
+# Coq build artifacts
+*.vo
+*.vio
+*.vok
+*.vos
+*.glob
+*.aux
+*.cmo
+*.cmi
+*.cmx
+*.o
+*.a
+*.native
+
+# Dune build artifacts
+_build/
+.merlin
+
+# CoqIDE / Proof General
+*.crashcoqide
+.coqide/
+*.dpd
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# Python cache (for verification scripts)
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/

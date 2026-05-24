@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Std as Coq 标准库
+    participant MC as MathComp<br/>(ssreflect, finmap, matrix)
+    participant HoTT as Coq-HoTT<br/>(Univalence, Equiv, Paths)
+    participant FH as Hypergraph/<br/>FinHypergraph
+    participant IM as Hypergraph/<br/>IncidenceMatrix
+    participant RS as Hypergraph/<br/>RewriteSystem
+    participant SC as DowkerComplex/<br/>Simplicial
+    participant DC as DowkerComplex/<br/>Dowker
+    participant PC as PearlCurtain/<br/>PearlCurtain
+    participant FC as PearlCurtain/<br/>Functoriality
+    participant TE as CoreTheorems/<br/>TopologicalEquiv
+    participant SD as CoreTheorems/<br/>StructureDetermines
+    participant UC as CoreTheorems/<br/>UnivalenceCorrespond
+    participant SI as CoreTheorems/<br/>StructuralInvariant
+    participant RB as CoreTheorems/<br/>RewriteBeta
+    participant App as Applications/
+    participant Ex as Verification/<br/>Examples
+
+    Std->>MC: 提供 Type/Prop/bool
+    Std->>HoTT: 提供 Type@{u}/sigT
+    MC->>FH: finType, finset
+    FH->>IM: FinHypergraph
+    FH->>RS: FinHypergraph
+    MC->>SC: finType, finset
+    MC->>DC: SimplicialComplex
+    FH->>DC: FinHypergraph
+    FH->>PC: FinHypergraph (桥接)
+    HoTT->>PC: Type@{u}, sigT, Equiv
+    PC->>FC: PearlCurtainType
+    FH->>FC: HypergraphMorphism
+    PC->>TE: PearlCurtainType
+    DC->>TE: DowkerComplex
+    HoTT->>TE: Trunc, Equiv
+    TE->>SD: topological_equiv
+    PC->>UC: PearlCurtainType
+    HoTT->>UC: univalence
+    TE->>SI: topological_equiv
+    RS->>RB: RewriteRule
+    PC->>RB: PearlCurtainType
+    PC->>App: 全部基础设施
+    FH->>Ex: 小型超图实例
+    PC->>Ex: 珠帘算子计算

@@ -1,0 +1,22 @@
+-Q . HypergraphHoTT
+
+-arg -noinit
+-arg -indices-matter
+
+Hypergraph/FinHypergraph.v
+Hypergraph/IncidenceMatrix.v
+Hypergraph/RewriteSystem.v
+DowkerComplex/Simplicial.v
+DowkerComplex/Dowker.v
+PearlCurtain/PearlCurtain.v
+PearlCurtain/Functoriality.v
+CoreTheorems/TopologicalEquiv.v
+CoreTheorems/StructureDetermines.v
+CoreTheorems/UnivalenceCorrespond.v
+CoreTheorems/StructuralInvariant.v
+CoreTheorems/RewriteBeta.v
+Applications/OrganizationHypergraph.v
+Applications/ConsciousnessType.v
+Applications/Conjectures.v
+Applications/NaturalSystems.v
+Verification/Examples.v

@@ -1,0 +1,97 @@
+classDiagram
+    direction TB
+
+    class FinHypergraph {
+        +V : finType
+        +E : finset (finset V)
+        +card_min : forall e, e \\in E => 2 <= |e|
+        +mkHypergraph(V, E, card_min) : FinHypergraph
+    }
+
+    class IncidenceMatrix {
+        +H : FinHypergraph
+        +M : 'M_(cardV, cardE)
+        +incidence : forall i j, M i j = (enum_val i \\in enum_val j)
+        +mkMatrix(H) : IncidenceMatrix
+    }
+
+    class DualHypergraph {
+        +H : FinHypergraph
+        +dual : FinHypergraph
+        +double_dual : H = H**
+        +mkDual(H) : DualHypergraph
+    }
+
+    class SimplicialComplex {
+        +V : finType
+        +S : finset (finset V)
+        +down_closed : forall s, s \\in S => forall t, t \\subset s => t \\in S
+        +nonempty : forall s, s \\in S => 0 < |s|
+        +mkComplex(V, S, down_closed, nonempty) : SimplicialComplex
+    }
+
+    class DowkerComplex {
+        +H : FinHypergraph
+        +D : SimplicialComplex
+        +simplex_def : forall s, s \\in S D <-> exists e, e \\in E H /\ s \\subset e
+        +mkDowker(H) : DowkerComplex
+    }
+
+    class PearlCurtainType {
+        +H : FinHypergraph
+        +T : V -> Type
+        +PC : Type
+        +PC_def : PC = sigT (fun e:E => forall v:sig (v\\in e), T (`v))
+        +mkPearlCurtain(H, T) : PearlCurtainType
+    }
+
+    class PearlCurtainFunctor {
+        +id_preservation : PearlCurtain id_H = id_Type
+        +comp_preservation : PearlCurtain (g \\circ f) = PearlCurtain g \\circ PearlCurtain f
+    }
+
+    class HypergraphMorphism {
+        +H1 : FinHypergraph
+        +H2 : FinHypergraph
+        +fV : V H1 -> V H2
+        +fE : E H1 -> E H2
+        +compat : forall e v, v \\in e -> fV v \\in fE e
+    }
+
+    class TopologicalEquiv {
+        +H : FinHypergraph
+        +statement : |PearlCurtain H| ~= |DowkerComplex H|
+    }
+
+    class StructureDetermines {
+        +H1 H2 : FinHypergraph
+        +statement : DowkerComplex H1 ~= DowkerComplex H2 -> PearlCurtain H1 ~= PearlCurtain H2
+    }
+
+    class UnivalenceCorrespond {
+        +H1 H2 : FinHypergraph
+        +iso : H1 ~= H2
+        +statement : PearlCurtain H1 == PearlCurtain H2
+        +proof : univalence
+    }
+
+    class HypergraphRewrite {
+        +H : FinHypergraph
+        +rho : finset V -> finset V
+        +applicable : rho E \\subset powerset V
+        +apply : FinHypergraph
+    }
+
+    FinHypergraph --> IncidenceMatrix : has
+    FinHypergraph --> DualHypergraph : has
+    FinHypergraph --> DowkerComplex : induces
+    FinHypergraph --> PearlCurtainType : maps to
+    FinHypergraph --> HypergraphRewrite : rewrite
+    SimplicialComplex <-- DowkerComplex : is-a
+    FinHypergraph --> HypergraphMorphism : morphism between
+    PearlCurtainType --> PearlCurtainFunctor : functoriality
+    PearlCurtainType --> TopologicalEquiv : theorem
+    DowkerComplex --> TopologicalEquiv : theorem
+    TopologicalEquiv --> StructureDetermines : corollary
+    UnivalenceCorrespond ..> PearlCurtainType : uses
+    HypergraphRewrite --> RewriteBeta : theorem

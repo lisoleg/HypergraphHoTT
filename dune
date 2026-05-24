@@ -1,0 +1,26 @@
+; HypergraphHoTT — dune 构建规则
+; 构建系统: dune >= 3.8
+
+(coq.theory
+ (name HypergraphHoTT)
+ (synopsis "Hypergraph Homotopy Type Theory — 珠帘合璧统合框架")
+ (theories HoTT mathcomp.ssreflect mathcomp.finmap mathcomp.algebra)
+ (modules
+  :standard
+  Hypergraph.FinHypergraph
+  Hypergraph.IncidenceMatrix
+  Hypergraph.RewriteSystem
+  DowkerComplex.Simplicial
+  DowkerComplex.Dowker
+  PearlCurtain.PearlCurtain
+  PearlCurtain.Functoriality
+  CoreTheorems.TopologicalEquiv
+  CoreTheorems.StructureDetermines
+  CoreTheorems.UnivalenceCorrespond
+  CoreTheorems.StructuralInvariant
+  CoreTheorems.RewriteBeta
+  Applications.OrganizationHypergraph
+  Applications.ConsciousnessType
+  Applications.Conjectures
+  Applications.NaturalSystems
+  Verification.Examples))
