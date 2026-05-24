@@ -30,9 +30,9 @@ Context {H : FinHypergraph}.
 Definition is_dowker_simplex (s : {finset V}) : bool :=
   existsb (fun e : {finset V} => s \subset e) (enum (E H)).
 
-(** Dowker 复形的单形集 *)
+(** Dowker 复形的单形集（排除空集：标准 Dowker 复形不含空单形）*)
 Definition dowker_simplices : {finset {finset V}} :=
-  [finset s in powerset [set: V] | is_dowker_simplex s].
+  [finset s in powerset [set: V] | (s != set0) && is_dowker_simplex s].
 
 (** 面封闭性证明：若 s 是 Dowker 单形且 t ⊆ s，则 t 也是 *)
 Lemma dowker_down_closed : forall s,
@@ -40,24 +40,28 @@ Lemma dowker_down_closed : forall s,
 Proof.
   move=> s Hs t Hsub.
   rewrite /dowker_simplices in *.
+  apply: finS_in.
   rewrite /is_dowker_simplex in *.
   (* 若 ∃e, s ⊆ e，则 t ⊆ s ⊆ e，故 t 也是 Dowker 单形 *)
-  (* Admitted: 需要 existsb 和 finset subset 传递性的技术性推导，
-     计划通过 subset 传递性与 existsb_mono 完成 *)
-  Admitted.
+  case: (existsb_exists (fun e : {finset V} => s \subset e) _) => [e [Hsub_se Hei]].
+  apply: (existsb_exists (fun e : {finset V} => t \subset e)).
+  exists e => //.
+  exact: (subset_trans Hsub Hsub_se).
+  (* 剩余目标：s ∈ dowker_simplices 蕴含 existsb ... *)
+  (* 从 finS_in 的前提推导 *)
+  move: Hs; rewrite finS_in => /existsb_exists [e' [Hse Hei']].
+  by apply: (existsb_exists (fun e0 : {finset V} => t \subset e0)); exists e'.
 Qed.
 
-(** 非空性证明 *)
+(** 非空性证明：Dowker 单形 s 非空，因为定义排除了空集 *)
 Lemma dowker_nonempty : forall s,
   s \in dowker_simplices -> 0 < #|s|.
 Proof.
   move=> s Hs.
-  (* Dowker 单形 s ⊆ e，而 e 的基数 >= 2，
-     但 s 本身可能为空集——需要进一步约束 *)
-  (* 在标准 Dowker 复形定义中，空集通常不是单形 *)
-  (* Admitted: 需要约定 dowker_simplices 排除空集，
-     计划通过添加 s != set0 条件完成 *)
-  Admitted.
+  rewrite /dowker_simplices in Hs.
+  (* s != set0 由过滤条件直接给出 *)
+  case: (finS_in Hs) => Hne0 _.
+  exact: cards_gt0.
 Qed.
 
 (** Dowker 复形 *)
@@ -82,31 +86,54 @@ Lemma edge_is_simplex : forall e,
   e \in E H -> e \in S (dowker_complex).
 Proof.
   move=> e Hei.
-  rewrite /dowker_complex /dowker_simplices /is_dowker_simplex.
-  (* e ⊆ e 是显然的，故 e 是 Dowker 单形 *)
-  (* Admitted: 需要 existsb 的自反性引理完成 *)
-  Admitted.
+  rewrite /dowker_complex /dowker_simplices.
+  apply: finS_in.
+  rewrite /is_dowker_simplex.
+  (* e ⊆ e 是显然的，只需在 enum 中找到 e *)
+  apply: (existsb_exists (fun e' : {finset V} => e \subset e')).
+  exists e => //.
+  (* e ∈ enum (E H) 因为 e ∈ E H *)
+  by rewrite mem_enum.
 Qed.
 
 (** Dowker 复形的维度不超过最大超边基数 - 1 *)
 Lemma dowker_dim_bound : dim (dowker_complex) <=
   \max_(e in E H) (#|e| - 1).
 Proof.
-  (* Admitted: 需要建立 Dowker 单形的基数上界，
-     计划通过 s ⊆ e ⟹ |s| <= |e| 完成 *)
+  rewrite /dim /dowker_complex.
+  (* dim K = max_{s in S K} (#|s| - 1) *)
+  (* 对每个 Dowker 单形 s, ∃e ∈ E(H), s ⊆ e, 故 #|s| <= #|e| *)
+  (* 因此 #|s| - 1 <= #|e| - 1 <= max_e (#|e| - 1) *)
+  (* 需要遍历 dowker_simplices 中每个单形建立上界 *)
+  (* Admitted: 需要 finset 上的大极大值引理，
+     计划通过 bigmax_le 超边基数上界完成 *)
   Admitted.
 Qed.
 
-(** 超边作为极大单形 *)
-Lemma edge_maximal_simplex : forall e,
+(** 超边不一定是极大 Dowker 单形（除非超图是简单超图）。
+    反例：H = ({0,1,2}, {{0,1}, {0,1,2}}) 中 {0,1} ⊂ {0,1,2} ∈ E。
+    需要添加"简单超图"条件：所有超边互不包含。 *)
+
+(** 简单超图条件：超边互不包含 *)
+Definition is_simple_hypergraph : bool :=
+  forallb (fun e1 : {finset V} =>
+    forallb (fun e2 : {finset V} =>
+      (e1 \subset e2) ==> (e1 == e2)) (enum (E H)))
+    (enum (E H)).
+
+(** 简单超图中，超边是极大 Dowker 单形 *)
+Lemma edge_maximal_simplex_simple :
+  is_simple_hypergraph ->
+  forall e,
   e \in E H -> e \in S (dowker_complex) ->
   forall s, e \subset s -> s \notin S (dowker_complex).
 Proof.
-  move=> e Hei Hsi s Hsub Hns.
-  (* 若 e 是超边且 e ⊂ s，则 s 不可能被任何超边包含
-     （因为 e 已经是极大超边），故 s 不是 Dowker 单形 *)
-  (* Admitted: 这不一定总是成立，取决于超图结构，
-     计划添加"H 是简单超图"的前提条件 *)
+  move=> Hsimple e Hei Hsi s Hsub.
+  (* 在简单超图中，没有超边严格包含 e，
+     因此 s 不能被任何超边包含 *)
+  rewrite /dowker_complex /dowker_simplices /is_dowker_simplex.
+  (* Admitted: 需要从 is_simple_hypergraph 推导不存在包含 e 的超边，
+     计划通过 forallb_neg + subset_anti 完成 *)
   Admitted.
 Qed.
 

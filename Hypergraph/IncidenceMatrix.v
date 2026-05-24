@@ -72,9 +72,11 @@ Lemma col_sum_ge2 (j : 'I_(#|E H|)) (M : 'M_(#|V H|, #|E H|)) :
 Proof.
   move=> Mspec.
   rewrite /col_sum.
-  (* 需要从 card_min 证明列和 >= 2 *)
-  (* Admitted: 需要 enum_val 与 finset 基数之间的对应引理，
-     计划通过建立 bijection 诱导的求和等式完成 *)
+  (* 超边 e = enum_val j，|e| >= 2 由 card_min 保证 *)
+  (* col_sum j M = |e| 因为 M(i,j)=1 ⟺ v_i ∈ e_j *)
+  (* 需要从 card_min 和 enum_val 的对应建立求和下界 *)
+  (* Admitted: 需要建立 ∑_{i} [v_i ∈ e_j] = #|e_j| 的形式化证明，
+     计划通过 enum_val 与 finset 成员的 bijection 求和引理完成 *)
   Admitted.
 
 End IncidenceMatrixProperties.
@@ -136,11 +138,11 @@ Lemma dual_matrix_transpose (M : 'M_(#|V H|, #|E H|)) :
   (forall i j, M i j = incidence_entry i j) ->
   forall i j, M^T i j = M j i.
 Proof.
-  move=> Mspec i j; rewrite /MatrixOrder.transpose mx.
-  (* 转置矩阵的基本性质，MathComp 已提供 *)
-  (* Admitted: 需要展开 transpose 的定义与 mxE 引理对齐，
-     计划通过 apply/mxE 完成 *)
-  Admitted.
+  move=> Mspec i j.
+  (* MathComp 的转置矩阵性质：M^T i j = M j i *)
+  (* 由 MatrixOrder.transpose 的定义和 mxE 引理给出 *)
+  apply/mxE.
+Qed.
 
 (** H** = H：对偶的对偶等于原超图（在结构同构意义下）*)
 Theorem double_dual_iso : HypergraphIso (dual_hypergraph (dual_hypergraph H)) H.

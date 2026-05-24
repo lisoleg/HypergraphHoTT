@@ -44,8 +44,11 @@ Lemma triangle_card_min : forall e,
 Proof.
   move=> e Hei.
   rewrite /triangle_E in Hei.
-  (* triangle_edge 包含 3 个元素，满足 |e| >= 2 *)
-  (* Admitted: 需要 finset 基数的技术性推导 *)
+  (* triangle_edge = {0, 1, 2} 包含 3 个元素 *)
+  (* 由 finS_in1/finS_in2 推导 e = triangle_edge *)
+  (* 然后 #|triangle_edge| = 3 >= 2 *)
+  (* Admitted: 需要具体 finset 的基数计算，
+     计划通过 rewrite cards_size / enumF 完成 *)
   Admitted.
 Qed.
 
