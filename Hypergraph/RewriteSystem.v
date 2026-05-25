@@ -35,17 +35,15 @@ Record RewriteRule (H : FinHypergraph) : Type := mkRewriteRule {
 (* ==================================================================== *)
 
 (** 一次重写步骤：将超图 H 通过规则 ρ 变换为新超图 H' *)
-(* Admitted: card_min 的证明需要从 finset image 的成员关系推导，
-   即从 e ∈ [finset rho e' | e' in E H] 推导 2 <= #|e|。
-   计划通过 finset_image_mem 引理 + rho_card_min 完成。
-   暂时整体 Admitted 以避免类型不匹配。 *)
-
 Definition apply_rewrite (H : FinHypergraph) (rho : RewriteRule H) : FinHypergraph.
 Proof.
   exists (V H) [finset rho.(rho) e | e in E H].
   move=> e Hei.
-  (* Admitted: 需要 finset image 的成员关系推导 *)
-  Admitted.
+  (* e ∈ [finset rho e' | e' in E H] 意味着 e = rho e' 对某 e' ∈ E H *)
+  rewrite finS_imageP in Hei.
+  case: Hei => e' Hei' Heq.
+  rewrite -Heq.
+  exact: (rho_card_min rho _ Hei').
 Defined.
 
 (** 重写步骤的关系：H →_ρ H' *)
@@ -107,9 +105,10 @@ Definition id_rewrite : RewriteRule H :=
 
 Lemma id_rewrite_apply : apply_rewrite H id_rewrite = H.
 Proof.
-  (* Admitted: 需要证明 [finset id e | e in E H] = E H，
-     计划通过 finset image_id 完成 *)
-  Admitted.
+  rewrite /apply_rewrite /id_rewrite.
+  congr mkHypergraph.
+  (* [finset id e | e in E H] = E H *)
+  apply: finset_image_id.
 Qed.
 
 End RewriteProperties.

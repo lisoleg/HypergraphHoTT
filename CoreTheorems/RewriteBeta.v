@@ -162,7 +162,7 @@ Corollary rewrite_confluence (H : FinHypergraph) (T : V H -> Type@{u})
   Commutes (rewrite_on_pearl_curtain rho1) (rewrite_on_pearl_curtain rho2) ->
   True.  (* 简化：完整陈述需要汇聚性的定义 *)
 Proof.
-  Admitted.
+  move=> _; trivial.
 Qed.
 
 (** 推论：β-归约的汇聚性由重写汇聚性保证 *)
@@ -171,5 +171,5 @@ Corollary beta_confluence_from_rewrite (H : FinHypergraph) (T : V H -> Type@{u})
   Commutes (rewrite_on_pearl_curtain rho) beta_on_pearl_curtain ->
   True.  (* 简化 *)
 Proof.
-  Admitted.
+  move=> _; trivial.
 Qed.

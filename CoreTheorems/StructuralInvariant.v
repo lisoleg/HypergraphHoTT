@@ -86,7 +86,7 @@ Corollary fundamental_group_invariant (H : FinHypergraph) :
   IsConnected H ->
   True.  (* 简化：完整陈述需要基本群的形式化 *)
 Proof.
-  Admitted.
+  move=> _; trivial.
 Qed.
 
 (** 连通超图的珠帘类型同调群不变 *)
@@ -94,7 +94,7 @@ Corollary homology_invariant (H : FinHypergraph) :
   IsConnected H ->
   True.  (* 简化：完整陈述需要同调群的形式化 *)
 Proof.
-  Admitted.
+  move=> _; trivial.
 Qed.
 
 (* ==================================================================== *)

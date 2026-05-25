@@ -133,16 +133,32 @@ Definition is_connected (K : SimplicialComplex) : Prop :=
 
 Section TrivialComplexes.
 
-(** 只有顶点的单纯复形（0 维）*)
+(** 只有顶点的单纯复形（0 维）
+    每个顶点形成一个单元素单形，没有更大的单形。
+    down_closed: 单元素集合的唯一非空子集是自身，
+    因此 t = s ∈ S。由于需要 finset image 成员关系分解，
+    暂用 Admitted 占位。 *)
+Lemma point_complex_down_closed (n : nat) :
+  forall s, s \in [finset [set val (Ordinal (erefl true))] | i : 'I_n] ->
+  forall t, t \subset s -> t \in [finset [set val (Ordinal (erefl true))] | i : 'I_n].
+Proof.
+  move=> s Hs t Hsub.
+  (* 每个 s 是单元素集合 {i}，t ⊆ {i} 意味着 t = {i} 或 t = ∅
+     从 s ∈ [finset f i | i in 'I_n] 得 s = f k 对某 k
+     从 t ⊆ s 且 |s| = 1 且后续 nonempty 要求 |t| > 0，得 t = s
+     Admitted: 需要 finset image 成员关系的分解引理，
+     即从 s ∈ [finset f i | i in T] 推导 s = f k 对某 k，
+     以及从单元素子集关系推导相等。
+     MathComp 的 finS_in/finS_in1 提供了部分但需要进一步组合。
+     计划通过 finset_imageP + subset_eq_card 完成 *)
+  Admitted.
+Qed.
+
 Definition point_complex (n : nat) : SimplicialComplex :=
   {| V := [finType of 'I_n];
      S := [finset [set val (Ordinal (erefl true))] |
              i : 'I_n];
-     down_closed := fun s Hs t Hsub =>
-       (* 需要证明子集也是单形 *)
-       (* Admitted: 需要 finset image 的成员关系分析，
-          计划通过单元素子集的唯一性完成 *)
-       t \in [finset [set val (Ordinal (erefl true))] | i : 'I_n];
+     down_closed := point_complex_down_closed n;
      nonempty := fun s Hs => ltac:(lia) |}.
 
 End TrivialComplexes.

@@ -74,7 +74,7 @@ Corollary structure_determines_homology (H1 H2 : FinHypergraph) :
   DowkerEquiv H1 H2 ->
   True.  (* 简化：完整陈述需要同调群的形式化 *)
 Proof.
-  Admitted.
+  move=> _; trivial.
 Qed.
 
 (** 推论：对偶超图的珠帘类型等价 *)

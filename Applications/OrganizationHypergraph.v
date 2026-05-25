@@ -78,15 +78,43 @@ Definition cult_brand_type (CB : CultBrand) : Type@{u} :=
 Definition CultBrandEquiv (OH : OrganizationHypergraph) (CB : CultBrand) : Prop :=
   Equiv (org_pearl_curtain_type OH) (cult_brand_type CB).
 
+(** 等价传递性 *)
+Lemma equiv_transitivity (A B C : Type@{u}) :
+  Equiv A B -> Equiv B C -> Equiv A C.
+Proof.
+  move=> [f1 g1 sec1 ret1] [f2 g2 sec2 ret2].
+  exists (f2 \o f1) (g1 \o g2).
+  - move=> b. rewrite sec2 sec1. reflexivity.
+  - move=> a. rewrite ret1 ret2. reflexivity.
+Qed.
+
+(** 等价对称性 *)
+Lemma equiv_symmetry (A B : Type@{u}) :
+  Equiv A B -> Equiv B A.
+Proof.
+  move=> [f g sec ret].
+  exists g f => //.
+Qed.
+
 (** 定理：同构的组织具有相同的 Cult Brand 类型 *)
 Theorem org_iso_cult_brand (OH1 OH2 : OrganizationHypergraph) :
   HypergraphIso (org_H OH1) (org_H OH2) ->
   CultBrandEquiv OH1 (mkCultBrand "same") ->
   CultBrandEquiv OH2 (mkCultBrand "same").
 Proof.
-  (* Admitted: 需要 HypergraphIso 保持 CultBrandEquiv 的证明，
-     计划通过 Univalence 对应款完成 *)
-  Admitted.
+  move=> Hiso Heqv1.
+  (* 策略：OH1 ≃ unit（来自 Heqv1），OH2 ≃ OH1（来自同构），
+     由传递性得 OH2 ≃ unit。
+     OH2 ≃ OH1 需要从 HypergraphIso 推导，
+     这依赖 univalence_correspond，目前含有 Admitted *)
+  apply: (equiv_transitivity _ (org_pearl_curtain_type OH1) _).
+  - exact: Heqv1.
+  - apply: equiv_symmetry.
+    (* Admitted: 需要从 HypergraphIso 推导
+       Equiv (org_pearl_curtain_type OH1) (org_pearl_curtain_type OH2)，
+       这依赖 univalence_correspond 定理（含有 Admitted）。
+       计划通过 univalence_correspond + 角色类型等价完成 *)
+    Admitted.
 Qed.
 
 (* ==================================================================== *)
@@ -106,7 +134,14 @@ Lemma org_resilience_from_connected (OH : OrganizationHypergraph) :
   IsConnected (org_H OH) ->
   org_resilience OH.
 Proof.
-  (* Admitted: 依赖结构不变量推论 3.4，
-     计划通过 structural_invariant 完成 *)
+  move=> Hconn rho.
+  (* 策略：由推论 3.4，连通超图的珠帘类型同伦型在重写下保持不变。
+     这意味着重写前后的珠帘类型等价。
+     但 structural_invariant 的结论类型是 IsHomotopyInvariant，
+     定义简化为 forall _ _, True，不直接给出 Equiv。
+     需要将 IsHomotopyInvariant 加强为给出具体 Equiv 的版本。
+     Admitted: 依赖推论 3.4 的加强版本，
+     即 IsConnected H -> forall rho, Equiv (PC(H)) (PC(apply_rewrite H rho))。
+     计划通过 structural_invariant + univalence_correspond 完成 *)
   Admitted.
 Qed.

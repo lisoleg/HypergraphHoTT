@@ -44,12 +44,8 @@ Lemma triangle_card_min : forall e,
 Proof.
   move=> e Hei.
   rewrite /triangle_E in Hei.
-  (* triangle_edge = {0, 1, 2} 包含 3 个元素 *)
-  (* 由 finS_in1/finS_in2 推导 e = triangle_edge *)
-  (* 然后 #|triangle_edge| = 3 >= 2 *)
-  (* Admitted: 需要具体 finset 的基数计算，
-     计划通过 rewrite cards_size / enumF 完成 *)
-  Admitted.
+  apply: finS_in1 in Hei. rewrite Hei /triangle_edge.
+  by rewrite cardUset !cardsU cards1.
 Qed.
 
 Definition triangle_hypergraph : FinHypergraph :=
@@ -99,8 +95,10 @@ Lemma twoedge_card_min : forall e,
   e \in twoedge_E -> 2 <= #|e|.
 Proof.
   move=> e Hei.
-  (* 两条超边各含 3 个顶点，满足 |e| >= 2 *)
-  Admitted.
+  rewrite /twoedge_E in Hei.
+  case: (finS_in Hei) => [-> | ->].
+  - by rewrite /twoedge_edge1 cardUset !cardsU cards1.
+  - by rewrite /twoedge_edge2 cardUset !cardsU cards1.
 Qed.
 
 Definition twoedge_hypergraph : FinHypergraph :=
@@ -166,8 +164,11 @@ Lemma five_card_min : forall e,
   e \in five_E -> 2 <= #|e|.
 Proof.
   move=> e Hei.
-  (* e₁, e₂ 各含 3 顶点，e₃ 含 2 顶点，均满足 |e| >= 2 *)
-  Admitted.
+  rewrite /five_E in Hei.
+  case: (finS_in Hei) => [-> | [-> | ->]].
+  - by rewrite /five_edge1 cardUset !cardsU cards1.
+  - by rewrite /five_edge2 cardUset !cardsU cards1.
+  - by rewrite /five_edge3 cardUset !cardsU cards1.
 Qed.
 
 Definition five_hypergraph : FinHypergraph :=

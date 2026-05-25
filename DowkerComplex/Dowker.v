@@ -100,13 +100,28 @@ Qed.
 Lemma dowker_dim_bound : dim (dowker_complex) <=
   \max_(e in E H) (#|e| - 1).
 Proof.
-  rewrite /dim /dowker_complex.
-  (* dim K = max_{s in S K} (#|s| - 1) *)
-  (* 对每个 Dowker 单形 s, ∃e ∈ E(H), s ⊆ e, 故 #|s| <= #|e| *)
-  (* 因此 #|s| - 1 <= #|e| - 1 <= max_e (#|e| - 1) *)
-  (* 需要遍历 dowker_simplices 中每个单形建立上界 *)
-  (* Admitted: 需要 finset 上的大极大值引理，
-     计划通过 bigmax_le 超边基数上界完成 *)
+  (* 证明策略：
+     dim(D(H)) = max_{s in dowker_simplices} (#|s| - 1)
+     对每个 Dowker 单形 s，由 is_dowker_simplex 定义，∃e ∈ E(H), s ⊆ e
+     因此 #|s| ≤ #|e|，故 #|s| - 1 ≤ #|e| - 1 ≤ max_e(#|e| - 1)
+     这给出 max_s(#|s| - 1) ≤ max_e(#|e| - 1)
+
+     形式化需要：
+     (a) 从 s ∈ dowker_simplices 推导 ∃e ∈ E(H), s ⊆ e
+     (b) 从 s ⊆ e 推导 #|s| ≤ #|e|（subset_card）
+     (c) 从 #|s| ≤ #|e| 推导 #|s| - 1 ≤ #|e| - 1
+     (d) 对 bigmax 应用 leq_trans 传递性
+
+     步骤 (a) 需要从 dowker_simplices 的定义推导 existsb_exists，
+     步骤 (d) 需要 MathComp 的 bigmax_le 或类似引理 *)
+  (* Admitted: 需要 finset bigmax 上界的通用引理，
+     即 max_{s in A} f(s) ≤ max_{e in B} g(e) 当
+     forall s in A, exists e in B, f(s) ≤ g(e)。
+     计划通过以下路线图完成：
+     (a) 引理 dowker_simplex_witness: s ∈ dowker_simplices ->
+         {e : {finset V} | e \in E H & s \subset e}
+     (b) 引理 subset_card_le: s \subset e -> #|s| <= #|e|
+     (c) bigmax_le 传递性 *)
   Admitted.
 Qed.
 
@@ -129,11 +144,18 @@ Lemma edge_maximal_simplex_simple :
   forall s, e \subset s -> s \notin S (dowker_complex).
 Proof.
   move=> Hsimple e Hei Hsi s Hsub.
-  (* 在简单超图中，没有超边严格包含 e，
-     因此 s 不能被任何超边包含 *)
-  rewrite /dowker_complex /dowker_simplices /is_dowker_simplex.
-  (* Admitted: 需要从 is_simple_hypergraph 推导不存在包含 e 的超边，
-     计划通过 forallb_neg + subset_anti 完成 *)
+  (* 策略：在简单超图中，没有超边严格包含 e。
+     s ⊃ e 且 s 是 Dowker 单形意味着 ∃e' ∈ E, s ⊆ e'。
+     但 e ⊂ s ⊆ e'，所以 e ⊂ e'，与简单性矛盾。
+     需要从 is_simple_hypergraph（forallb 形式）推导：
+     对所有 e1, e2 ∈ E, e1 ⊂ e2 → e1 = e2。
+     取 e' 使得 s ⊆ e'（Dowker 单形定义），
+     则 e ⊂ e' 且 e, e' ∈ E，矛盾。*)
+  (* Admitted: 需要从 is_simple_hypergraph 的 forallb 形式推导
+     对具体 e, e' 的反包含性质，即
+     is_simple_hypergraph -> forall e1 e2, e1 \in E -> e2 \in E ->
+     e1 \subset e2 -> e1 = e2。
+     计划通过 forallbP + existsb_exists + subset_anti 完成 *)
   Admitted.
 Qed.
 
@@ -151,10 +173,23 @@ Context {H : FinHypergraph}.
 Theorem dowker_dual_equiv :
   dim (dowker_complex H) = dim (dowker_complex (dual_hypergraph H)).
 Proof.
-  (* Dowker 定理：D(H) 和 D(H*) 具有相同的同伦型，
-     因此维度相同 *)
+  (* Dowker 定理：D(H) 和 D(H*) 具有相同的同伦型，因此维度相同。
+     这是 Dowker 1943 年经典结果的形式化。
+
+     证明策略：
+     1. D(H) 和 D(H*) 同伦等价（Dowker 同伦等价定理）
+     2. 同伦等价的单纯复形维度相同
+     3. 这给出了 dim(D(H)) = dim(D(H*))
+
+     步骤 1 是非平凡的拓扑学结果，需要 nerve 引理和伴随性 *)
   (* Admitted: 需要 Dowker 同伦等价定理的形式化，
-     计划通过 nerve 构造与伴随性完成 *)
+     即 D(H) ≃_h D(H*)。
+     这是经典拓扑学结果（Dowker 1943），
+     需要单纯逼近 + nerve 引理 + 伴随函子。
+     计划通过以下路线图完成：
+     (a) 建立 D(H) 和 D(H*) 之间的单纯映射对
+     (b) 证明合成同伦于恒等（需要 nerve 引理）
+     (c) 从同伦等价推导维度相同 *)
   Admitted.
 Qed.
 
@@ -169,7 +204,16 @@ Section NerveConstruction.
 Context {H : FinHypergraph}.
 
 (** Nerve 构造：D(H) 的 nerve 是一个单纯复形，
-    其 k-单形是 D(H) 的 k+1 个单形的非空交集 *)
+    其 k-单形是 D(H) 的 k+1 个单形的非空交集。
+
+    注意：Nerve 构造的顶点集应为原单纯复形的单形集合，
+    而非原顶点集。标准 Nerve 构造应定义为：
+    - Nerve(K) 的顶点 = K 的单形
+    - Nerve(K) 的 k-单形 = {σ₀, ..., σ_k} ⊆ S(K) 使得 ∩ᵢσᵢ ≠ ∅
+
+    这与 SimplicialComplex 的 V 字段为 finType 的设计不完全兼容，
+    因为需要将 {finset V} 编码为 finType 的元素。
+    暂以 Admitted 占位，后续可通过构造适当的 finType 编码完成。 *)
 
 Definition nerve_simplex (K : SimplicialComplex) (sigma : {finset {finset V}}) : bool :=
   (sigma != set0) &&
@@ -178,8 +222,19 @@ Definition nerve_simplex (K : SimplicialComplex) (sigma : {finset {finset V}}) :
   intersection != set0.
 
 Definition nerve (K : SimplicialComplex) : SimplicialComplex.
-  (* Admitted: nerve 构造需要面封闭性和非空性的完整证明，
-     计划通过 nerve_simplex 的定义推导 down_closed 和 nonempty 性质完成 *)
-Admitted.
+Proof.
+  (* Admitted: Nerve 构造需要将 S(K) 的元素编码为 finType 的元素，
+     即需要 [finType of {finset V} \in S K] 或类似构造。
+     这需要 MathComp 的 finType 实例化，
+     加上 nerve_simplices 的 down_closed 和 nonempty 性质证明。
+     down_closed: 若 sigma 是 nerve simplex 且 tau ⊆ sigma，
+     则 tau 的交集 ⊇ sigma 的交集 ≠ ∅，且 tau 的元素也是 K 的单形。
+     nonempty: nerve simplex sigma 的交集非空，
+     故对每个 s ∈ sigma，s ≠ ∅，从而 0 < #|s|。
+     但 V 字段需要是 finType，而当前无法直接将
+     {finset V} \in S K 作为 finType。
+     计划通过 ord_enum + finType 实例化完成 *)
+  Admitted.
+Defined.
 
 End NerveConstruction.

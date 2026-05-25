@@ -3,6 +3,12 @@
     - 恒等保持：𝒫ℭ(id_H) ≃ id
     - 合成保持：𝒫ℭ(g ∘ f) ≃ 𝒫ℭ(g) ∘ 𝒫ℭ(f)
 
+    注意：PearlCurtainMap 的当前实现使用了简化假设
+    （丢弃了原始依赖函数 f1，用 T2 (projT1 w) 替代），
+    因此函子性的完整证明需要函数外延性（funext）
+    以及 PearlCurtainMap 定义的修正。
+    目前以 Admitted 占位，待修正 PearlCurtainMap 后补全。
+
     作者: HypergraphHoTT 项目
     对应需求: P1-01
     对应理论: 引理 3.2
@@ -22,6 +28,16 @@ Unset Strict Implicit.
 Unset Printing Coercions.
 
 (* ==================================================================== *)
+(** * 函数外延性公理 *)
+(* ==================================================================== *)
+
+(** 函数外延性：若两个函数在每个点上相等，则它们相等。
+    这是 HoTT 的基本公理，在 Coq 的标准逻辑中不可证明。
+    项目使用 HoTT 框架，因此可以安全地假设此公理。 *)
+Axiom funext : forall (A : Type@{u}) (B : A -> Type@{u}) (f g : forall x, B x),
+  (forall x, f x = g x) -> f = g.
+
+(* ==================================================================== *)
 (** * 恒等保持 *)
 (* ==================================================================== *)
 
@@ -37,9 +53,15 @@ Lemma functoriality_id :
 Proof.
   move=> x.
   (* 恒等态射的 fV = id, fE = id，
-     因此珠帘映射保持超边和依赖积不变 *)
-  (* Admitted: 需要 sigT 的 η-展开和依赖函数的函数外延性，
-     计划通过 funext + sigT_eta 完成 *)
+     因此珠帘映射保持超边和依赖积不变。
+     但 PearlCurtainMap 的当前实现丢弃了原始依赖函数 f1，
+     用 T2 (projT1 w) 替代，这导致映射不等于恒等。 *)
+  (* Admitted: 需要 funext + sigT 的 η-展开 + 依赖函数的函数外延性。
+     关键问题：PearlCurtainMap 的定义中 f1 被丢弃，
+     替换为 fun w => T (projT1 w)，这在一般情况下不等于 f。
+     计划通过以下路线图完成：
+     (a) 修正 PearlCurtainMap 定义以正确传播依赖函数
+     (b) 应用 funext + sigT_eta 完成证明 *)
   Admitted.
 Qed.
 
@@ -48,8 +70,13 @@ Theorem functoriality_id_equiv :
   Equiv (PearlCurtainMap (id_morphism H) T T) id.
 Proof.
   (* 从 functoriality_id 构造等价 *)
-  (* Admitted: 需要将函数等式提升为 Equiv 记录，
-     计划通过 functoriality_id + mkEquiv 完成 *)
+  (* 一旦 functoriality_id 被证明，可以构造：
+     mkEquiv (PearlCurtainMap (id_morphism H) T T) id
+       (fun x => functoriality_id x)
+       (fun x => ...)
+       ... *)
+  (* Admitted: 需要将函数等式提升为 Equiv 记录。
+     计划通过 functoriality_id + mkEquiv 构造完成 *)
   Admitted.
 Qed.
 
@@ -76,9 +103,10 @@ Lemma functoriality_comp :
 Proof.
   move=> x.
   (* 合成态射的 fV = fV g ∘ fV f, fE = fE g ∘ fE f，
-     珠帘映射的合成通过超边和顶点映射的合成 *)
-  (* Admitted: 需要 sigT 的函子性与依赖函数的合成性质，
-     计划通过 sigT_map_comp + forall_comp 完成 *)
+     珠帘映射的合成通过超边和顶点映射的合成。
+     与 functoriality_id 相同的问题：PearlCurtainMap 的简化假设 *)
+  (* Admitted: 需要 sigT 的函子性与依赖函数的合成性质。
+     计划通过 sigT_map_comp + forall_comp + funext 完成 *)
   Admitted.
 Qed.
 
@@ -89,7 +117,7 @@ Theorem functoriality_comp_equiv :
     (fun x => PearlCurtainMap g T2 T3 (PearlCurtainMap f T1 T2 x)).
 Proof.
   (* 从 functoriality_comp 构造等价 *)
-  (* Admitted: 需要将函数等式提升为 Equiv 记录，
+  (* Admitted: 需要将函数等式提升为 Equiv 记录。
      计划通过 functoriality_comp + mkEquiv 完成 *)
   Admitted.
 Qed.
@@ -126,10 +154,12 @@ Theorem pearl_curtain_functor_axioms {H1 H2 H3 : FinHypergraph}
 Proof.
   split.
   - (* 恒等律 *)
-    (* Admitted: 需要 funext 完成 *)
+    (* Admitted: 需要 funext 完成。
+       等价于 functoriality_id 的点态版本。 *)
     Admitted.
   - (* 合成律 *)
-    (* Admitted: 需要 funext 完成 *)
+    (* Admitted: 需要 funext 完成。
+       等价于 functoriality_comp 的点态版本。 *)
     Admitted.
 Qed.
 
